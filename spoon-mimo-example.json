@@ -1,0 +1,35 @@
+{
+	"id": "fc047991-ba62-4057-ac5f-9432cfd13c9c",
+	"version": "0.1.0",
+	"name": "spoon-mimo-example",
+	"contractsTemplateManager": {
+		"contracts": []
+	},
+	"routesTemplateManager": {
+		"routes": []
+	},
+	"docsTemplateManager": {
+		"docs": []
+	},
+	"scriptsTemplateManager": {
+		"scripts": [
+			{
+				"id": "3b597523-3fb5-4587-935b-7ce911f868ad",
+				"name": "Mimo.tsx",
+				"code": "import { observer, useLocalObservable } from 'mobx-react-lite'\nimport { Box, Button, Input, Flex, Image, Text, Center, Link } from '@chakra-ui/react'\nimport { useEffect } from 'react'\nimport { BigNumberInputState, BigNumberState, BigNumber } from 'standard'\nimport sdk from 'spoon'\n\nconst chainId = 4689\n\nexport default function Demo({ children }) {\n  const store = useLocalObservable(() => ({\n    swapLoading: false,\n    slippage: 0.1,\n    fromToken: {\n      //WIOTX ADDRESS\n      address: \"0xa00744882684c3e4747faefd68d283ea44099d03\"\n    },\n    switchChain() {\n      helper.setChain(god, chainId)\n    },\n    fromAmount: new BigNumberInputState({}),\n    toToken: {\n      address: \"0xb8744ae4032be5e5ef9fab94ee9c3bf38d5d2ae0\",\n      balance: new BigNumberState({ decimals: 18 }),\n      decimals: 18,\n      name: \"VITA\",\n      logoURL: \"https://iotexproject.iotex.io/iotex-token-metadata/master/images/io1hp6y4eqr90j7tmul4w2wa8pm7wx462hq0mg4tw.png\"\n    },\n    toAmount: new BigNumberInputState({ decimals: 18 }),\n    connectWallet() {\n      god.setShowConnecter(true)\n    },\n    get deadline() {\n      return String(Math.floor(new Date().getTime() / 1000) + Number(20) * 60);\n    },\n    onChangeFromAmount(value) {\n      this.fromAmount.setFormat(value)\n      _.throttle(() => {\n        this.updatePrice();\n      }, 500)();\n    },\n    onChangeToAmount(value) {\n      this.toAmount.setFormat(value)\n      // this.toAmount.setDecimals(this.toToken.decimals);\n    },\n    //calc swap amount\n    async updatePrice() {\n      sdk.smartgraph.query(`query {\n          UniSwapRouter (calls: {chainId: 4689, address: \"0x147CdAe2BF7e809b9789aD0765899c06B361C5cE\"}) {\n              getAmountsOut (amountIn: \"${this.fromAmount.value.toFixed(0)}\", path:[\"${store.fromToken.address}\",\"${store.toToken.address}\"])\n          }\n      }`).then((res) => {\n        console.log(res.data.UniSwapRouter[0]);\n        this.toAmount.setValue(new BigNumber(res.data.UniSwapRouter[0].getAmountsOut.split(',')[1]));\n      });\n    },\n    onSwap() {\n      this.swapLoading = true\n      try {\n        sdk.smartgraph.mutation({\n          contractName: 'Swap',\n          method: 'swapExactETHForTokens',\n          params: [this.toToken.address, this.toAmount.value.times(1 - this.slippage).toFixed(0), god.currentNetwork.account, this.deadline],\n          address: '0xae50E962A4191569Ab0a9eeF1042B6449B2056e3',\n          value: this.fromAmount.value.toFixed(0)\n        }).then((res) => {\n          // console.log(res);\n          this.swapLoading = false\n          helper.toast('Swap Success')\n        });\n      } catch (err) {\n        this.swapLoading = false\n      }\n\n    },\n    init() {\n      try {\n        sdk.smartgraph.query(`query {\n          ERC20 (calls: {chainId: 4689, address: \"${store.toToken.address}\"}) {\n              balanceOf (account: \"${currentNetwork.account}\")\n          }\n      }`).then((res) => {\n          // console.log(res);\n          store.toToken.balance.setValue(new BigNumber(res.data.ERC20[0].balanceOf))\n          god.currentNetwork.loadBalance();\n        });\n      } catch (err) {\n      }\n    }\n  }))\n\n  useEffect(() => {\n    store.init()\n    sdk.smartgraph.event.on('provider.newBlock', (chainId) => {\n      // store.init()\n    });\n  }, [])\n\n  if (!currentNetwork.account) {\n    return <Button onClick={store.connectWallet}>Connect Wallet</Button>\n  }\n\n  if (god.currentChain.chainId != chainId) {\n    const SwitchButton = observer(() => <Button colorScheme='purple' onClick={store.switchChain}>Switch Chain (IoTeX)</Button>)\n    return <SwitchButton />\n  }\n\n  const App = observer(() => (\n    <Box bg=\"white\" w=\"500px\" p=\"2rem\" rounded=\"xl\" boxShadow='0px 3px 20px #d6d6d680'>\n      <Link href=\"https://dev.mimo.exchange/swap\" isExternal fontSize=\"xs\" color=\"purple\">Detail : https://dev.mimo.exchange/swap</Link>\n      <Flex mt={4} direction=\"column\">\n        <Flex>\n          <Text ml=\"2\" fontSize=\"xs\">FROM:</Text>\n          <Image ml=\"2\" w='5' h='5' src=\"https://swap.mimo.exchange/images/coins/iotx.png\" />\n          <Text ml=\"1\" fontSize=\"xs\">IOTX</Text>\n          <Text fontSize=\"xs\" ml=\"auto\">{currentChain.Coin?.balance.format}</Text>\n        </Flex>\n        <Input value={store.fromAmount.format} mt={2} bg=\"white\" placeholder='0.0' onChange={(event) => {\n          store.onChangeFromAmount(event.currentTarget.value);\n        }} />\n      </Flex>\n\n      <Center mt={5}>\n        <Box rounded=\"full\" bg=\"#f3f0ff\" p={1}>\n          <svg fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" style={{ height: 24 }}><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4\"></path></svg>\n        </Box>\n      </Center>\n\n      <Flex direction=\"column\" mt={3}>\n        <Flex>\n          <Text ml=\"2\" fontSize=\"xs\">TO:</Text>\n          <Image ml=\"2\" w='5' h='5' src={store.toToken.logoURL} />\n          <Text ml=\"1\" fontSize=\"xs\">{store.toToken.name}</Text>\n          <Text fontSize=\"xs\" ml=\"auto\">{store.toToken.balance.format}</Text>\n        </Flex>\n        <Input value={store.toAmount.format} mt={2} bg=\"white\" placeholder='0.0' onChange={(event) => {\n          store.onChangeToAmount(event.currentTarget.value);\n        }} />\n      </Flex>\n\n      <Center mt={5}>\n        <Button disabled={store.fromAmount.isZero} isLoading={store.swapLoading} w='full' colorScheme='purple' onClick={store.onSwap}>Swap</Button>\n      </Center>\n    </Box>))\n\n  return <App />\n}\n",
+				"isOpen": true,
+				"isRouter": false,
+				"viewSize": "sm"
+			}
+		]
+	},
+	"chainData": {
+		
+	},
+	"createdAt": 1662519496112,
+	"homepageUrl": "",
+	"logoUrl": "",
+	"description": {
+		
+	}
+}
