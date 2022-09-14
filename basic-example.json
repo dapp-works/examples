@@ -1923,7 +1923,7 @@
 				"name": "HelloWorld.route.tsx",
 				"code": "import sdk from 'spoon'\nimport { observer, useLocalObservable } from 'mobx-react-lite'\nimport { Box, Button } from '@chakra-ui/react'\n//refer to: https://solidity-by-example.org/hello-world/\nexport default function HelloWorld() {\n  const store = useLocalObservable(() => ({\n    string: \"\",\n    async great() {\n      let res = await sdk.smartgraph.query(`query {\n          HelloWorld (calls: {chainId: 4689, address: \"0xb3A3A0e0d966970456e3178f9ec03fe4DCbc2deC\"}) {\n              greet\n          }\n      }`)\n      this.string = res.data.HelloWorld[0].greet\n    }\n  }))\n\n  const App = observer(() => {\n    return <Box bg=\"white\" w=\"500px\" p=\"2rem\" rounded=\"xl\" boxShadow='0px 3px 20px #d6d6d680'>\n      <Box>String: {store.string || '-'}</Box>\n      <Button colorScheme='purple' mt={4} size=\"sm\" my=\"4px\" onClick={store.great}>start great</Button>\n    </Box>\n  })\n\n  return <App />\n}\n\n",
 				"isOpen": true,
-				"isRouter": false,
+				"isRouter": true,
 				"viewSize": "sm"
 			},
 			{
