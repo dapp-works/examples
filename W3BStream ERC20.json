@@ -1,10 +1,11 @@
 {
 	"id": "22d7e294-aa70-432e-afd4-dae53105a605",
-	"name": "W3BStream ERC20",
 	"version": "0.1.0",
+	"name": "W3BStream ERC20",
 	"contractsTemplateManager": {
 		"contracts": [
 			{
+				"id": "bbf6c4a9-0eb0-47e2-8683-8354a5a311c5",
 				"name": "W3BERC20",
 				"abi": [
 					{
@@ -317,8 +318,59 @@
 						"stateMutability": "nonpayable",
 						"type": "function"
 					}
-				]
+				],
+				"bytecode": "",
+				"isOpen": true,
+				"viewSize": "sm"
 			}
 		]
+	},
+	"routesTemplateManager": {
+		"routes": []
+	},
+	"docsTemplateManager": {
+		"docs": []
+	},
+	"scriptsTemplateManager": {
+		"scripts": []
+	},
+	"chainData": {
+		"1": {
+			"contractInstanceManager": {
+				"contracts": []
+			}
+		},
+		"137": {
+			"contractInstanceManager": {
+				"contracts": []
+			}
+		},
+		"4690": {
+			"contractInstanceManager": {
+				"contracts": [
+					{
+						"id": "4a022496-be57-493c-8650-de8b09ce3f3d",
+						"templateId": "bbf6c4a9-0eb0-47e2-8683-8354a5a311c5",
+						"address": "0xb73eE6EB5b1984c78CCcC49eA7Ad773E71d74F51",
+						"name": "W3BERC20",
+						"functionsCache": {
+							"name": {
+								"callResult": "W3BStream Token"
+							}
+						},
+						"tabIndex": 0,
+						"execHistory": [],
+						"show": true
+					}
+				]
+			}
+		}
+	},
+	"createdAt": 1666943317941,
+	"url": "https://raw.githubusercontent.com/spoonproject/examples/main/W3BStream ERC20.json",
+	"homepageUrl": "",
+	"logoUrl": "",
+	"description": {
+		
 	}
 }
